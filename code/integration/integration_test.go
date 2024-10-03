@@ -3,6 +3,7 @@ package integration
 import (
 	"bytes"
 	"io/fs"
+	"log"
 	"os"
 	"sync"
 	"testing"
@@ -18,16 +19,31 @@ func Test(t *testing.T) {
 
 	var logBuffer bytes.Buffer
 	fileSystem := NewFileSystem()
-	_ = fileSystem.WriteFile("article-1.md", []byte(article1Content), 0644)
-	_ = fileSystem.WriteFile("article-2.md", []byte(article2Content), 0644)
+	a1WriteErr := fileSystem.WriteFile("article-1.md", []byte(article1Content), 0644)
+	if a1WriteErr != nil {
+		log.Println("[ERROR] a1WriteErr:", a1WriteErr)
+	}
+	a2WriteErr := fileSystem.WriteFile("article-2.md", []byte(article2Content), 0644)
+	if a2WriteErr != nil {
+		log.Println("[ERROR] a1WriteErr:", a2WriteErr)
+	}
 
 	// TODO: finish integration test
 
 	t.Log("\n" + logBuffer.String())
 
-	listing, _ := fs.ReadFile(fileSystem.MapFS, "output/index.html")
-	article1, _ := fs.ReadFile(fileSystem.MapFS, "output/article/1/index.html")
-	article2, _ := fs.ReadFile(fileSystem.MapFS, "output/article/2/index.html")
+	listing, listingErr := fs.ReadFile(fileSystem.MapFS, "output/index.html")
+	if listingErr != nil {
+		log.Println("[ERROR] listingErr:", listingErr)
+	}
+	article1, article1Err := fs.ReadFile(fileSystem.MapFS, "output/article/1/index.html")
+	if article1Err != nil {
+		log.Println("[ERROR] listingErr:", article1Err)
+	}
+	article2, article2Err := fs.ReadFile(fileSystem.MapFS, "output/article/2/index.html")
+	if article2Err != nil {
+		log.Println("[ERROR] listingErr:", article2Err)
+	}
 
 	should.So(t, string(listing), should.ContainSubstring, `<li><a href="file:///article/1">Article 1</a></li>`)
 	should.So(t, string(listing), should.ContainSubstring, `<li><a href="file:///article/2">Article 2</a></li>`)
